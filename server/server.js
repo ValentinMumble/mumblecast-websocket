@@ -19,6 +19,19 @@ var tracks = [];
 var isInitTracks = false;
 var socketCount = 0;
 
+var deleteTrack = function(id) {
+  // TODO bug here
+  var i = 0;
+  while (i < tracks.length) {
+    if (tracks[i].id === id) {
+      tracks.splice(i, 1);
+      return true;
+    }
+    i++;
+  }
+  return false;
+};
+
 io.sockets.on("connection", function(socket) {
   socketCount++;
 
@@ -30,11 +43,17 @@ io.sockets.on("connection", function(socket) {
     io.sockets.emit("users connected", socketCount);
   })
 
-  socket.on("new track", function(data){
+  socket.on("new track", function(data) {
     /* New track added, push to all sockets except sender and insert into db. */
     tracks.push(data);
     socket.broadcast.emit("new track", data);
     db.query("INSERT INTO tracks (provider, trackId) VALUES (?, ?)", [data.provider, data.trackId]);
+  });
+
+  socket.on("delete track", function(id) {
+    deleteTrack(id);
+    socket.broadcast.emit("delete track", id);
+    db.query("DELETE FROM tracks WHERE id=?", id);
   });
 
   /* Check to see if initial query/tracks are set. */

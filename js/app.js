@@ -11,12 +11,25 @@ $(document).ready(function() {
     "images/default_artwork_red.png",
     "images/default_artwork_yellow.png"
   ];
+  var SPEED = 100;
 
   /* Connection to the node/websockets server. */
   var socket = io.connect("http://" + SOCKET_HOST + ":3000");
 
   var getRandomDefaultArtworkUrl = function() {
     return DEFAULT_ARTWORK_URLS[Math.floor(Math.random() * DEFAULT_ARTWORK_URLS.length)];
+  };
+
+  var displayAlert = function(message) {
+    $("#alertContent").html(message);
+    $("#alert").fadeIn(SPEED);
+    setTimeout(clearAlert, 3000);
+  };
+
+  var clearAlert = function(time) {
+    $("#alert").fadeOut(time, function() {
+      $("#alertContent").html("");
+    });
   };
 
   var submitTrack = function() {
@@ -38,30 +51,35 @@ $(document).ready(function() {
   var loadTrack = function(trackObject, broadcast) {
     /* Immediately clear any alert. */
     clearAlert(0);
-    $("#loading").fadeIn("fast");
+    $("#loading").fadeIn(SPEED);
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
-      $("#loading").fadeOut("fast");
+      $("#loading").fadeOut(SPEED);
       if (error) {
         console.log(error);
         displayAlert(error.message);
       } else {
         if (broadcast) socket.emit("new track", trackObject);
         var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url;
-        $("#tracks").append('<div class="track"><div class="artwork" style="background-image:url(' + artworkUrl + ')"></div><span class="title">' + track.title + '</span> &mdash; <span class="user">' + track.user.username + '</span>');
+        var trackDiv = $("<div />").css("display", "none").attr("class", "track");
+        var artworkDiv = $("<div />").attr("class", "artwork").css("background-image", "url(" + artworkUrl + ")");
+        var controlsDiv = $("<div />").attr("class", "controls");
+        var playButton = $("<button />").attr("class", "play");
+        var deleteButton = $("<button />").attr("class", "delete").attr("id", trackObject.id);
+        controlsDiv.append(playButton).append(deleteButton);
+
+        trackDiv.append(artworkDiv);
+        trackDiv.append('<span class="title">' + track.title + '</span> &mdash; <span class="user">' + track.user.username + '</span>');
+        trackDiv.append(controlsDiv);
+
+        $("#tracks").append(trackDiv);
+        trackDiv.slideDown(SPEED);
       }
     });
   };
 
-  var displayAlert = function(message) {
-    $("#alertContent").html(message);
-    $("#alert").fadeIn("fast");
-    setTimeout(clearAlert, 3000);
-  };
-
-  var clearAlert = function(time) {
-    $("#alert").fadeOut(time, function() {
-      $("#alertContent").html("");
-    });
+  var deleteTrack = function(objectId, broadcast) {
+    $("#" + objectId).parents(".track").slideUp(SPEED);
+    if (broadcast) socket.emit("delete track", objectId);
   };
 
   /* Initial set of tracks, loop through and add to list. */
@@ -76,6 +94,10 @@ $(document).ready(function() {
     loadTrack(data, false);
   });
 
+  socket.on("delete track", function(id) {
+    deleteTrack(id, false);
+  });
+
   /* New socket connected. */
   socket.on("users connected", function(data) {
     $("#usersConnected").html("users connected: " + data);
@@ -86,6 +108,10 @@ $(document).ready(function() {
     if (e.which == 13) {
       submitTrack();
     }
+  });
+
+  $("#tracks").on("click", ".delete", function() {
+    deleteTrack($(this).attr("id"), true);
   });
 
   /* -------- Main -------- */
