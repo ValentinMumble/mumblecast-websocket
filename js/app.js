@@ -2,6 +2,7 @@ $(document).ready(function() {
 
   /* Constants. */
   var SOCKET_HOST = "54.187.163.215";
+  var SOCKET_PORT = 3000;
   var DEFAULT_ARTWORK_URLS = [
     "images/default_artwork_blue.png",
     "images/default_artwork_gray.png",
@@ -14,7 +15,7 @@ $(document).ready(function() {
   var SPEED = 100;
 
   /* Connection to the node/websockets server. */
-  var socket = io.connect("http://" + SOCKET_HOST + ":3000");
+  var socket = io.connect("http://" + SOCKET_HOST + ":" + SOCKET_PORT);
 
   var getRandomDefaultArtworkUrl = function() {
     return DEFAULT_ARTWORK_URLS[Math.floor(Math.random() * DEFAULT_ARTWORK_URLS.length)];
