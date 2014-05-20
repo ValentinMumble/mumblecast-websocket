@@ -112,7 +112,7 @@ input, textarea, canvas {
 }
 
 #alert {
-	position: absolute;
+	position: fixed;
 	left: 50%;
 	bottom: 50px;
 }
