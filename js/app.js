@@ -37,7 +37,16 @@ $(document).ready(function() {
     var track = $("#trackInput").val();
     if (validate(track)) {
       $("#trackInput").val("");
-      loadTrack({provider: "soundcloud", trackId: track}, true);
+      $("#loading").fadeIn(SPEED);
+      /* Check that the track is valid. */
+      SC.get("/tracks/" + track, function(t, error){
+        $("#loading").fadeOut(SPEED);
+        if (error) {
+          displayAlert(error.message);
+        } else {
+          socket.emit("new track", {provider: "soundcloud", trackId: track});
+        }
+      });
     }
   };
 
@@ -49,7 +58,7 @@ $(document).ready(function() {
     return true;
   };
 
-  var loadTrack = function(trackObject, broadcast) {
+  var loadTrack = function(trackObject) {
     /* Immediately clear any alert. */
     clearAlert(0);
     $("#loading").fadeIn(SPEED);
@@ -58,11 +67,9 @@ $(document).ready(function() {
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
       $("#loading").fadeOut(SPEED);
       if (error) {
-        console.log(error);
         displayAlert(error.message);
         $track.remove();
       } else {
-        if (broadcast) socket.emit("new track", trackObject);
         var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url;
         var $artwork = $("<div />").attr("class", "artwork").css("background-image", "url(" + artworkUrl + ")");
         var $controls = $("<div />").attr("class", "controls");
@@ -78,25 +85,24 @@ $(document).ready(function() {
     });
   };
 
-  var deleteTrack = function(objectId, broadcast) {
+  var deleteTrack = function(objectId) {
     $("#" + objectId).parents(".track").slideUp(SPEED, function() { $(this).remove(); });
-    if (broadcast) socket.emit("delete track", objectId);
   };
 
   /* Initial set of tracks, loop through and add to list. */
   socket.on("initial tracks", function(data){
     for (var i = 0; i < data.length; i++) {
-      loadTrack(data[i], false);
+      loadTrack(data[i]);
     }
   });
 
   /* New track received from the socket, append it to our list of current tracks. */
   socket.on("new track", function(data) {
-    loadTrack(data, false);
+    loadTrack(data);
   });
 
   socket.on("delete track", function(id) {
-    deleteTrack(id, false);
+    deleteTrack(id);
   });
 
   /* New socket connected. */
@@ -112,7 +118,7 @@ $(document).ready(function() {
   });
 
   $("#tracks").on("click", ".delete", function() {
-    deleteTrack($(this).attr("id"), true);
+    socket.emit("delete track", $(this).attr("id"));
   });
 
   /* -------- Main -------- */
