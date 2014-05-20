@@ -67,7 +67,7 @@ $(document).ready(function() {
         var $controls = $("<div />").attr("class", "controls");
         var $playButton = $("<button />").attr("class", "play");
         var $deleteButton = $("<button />").attr("class", "delete").attr("id", trackObject.id);
-        controlsDiv.append($playButton).append($deleteButton);
+        $controls.append($playButton).append($deleteButton);
 
         $track.append($artwork);
         $track.append('<span class="title">' + track.title + '</span> &mdash; <span class="user">' + track.user.username + '</span>');
