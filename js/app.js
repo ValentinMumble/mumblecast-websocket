@@ -52,33 +52,33 @@ $(document).ready(function() {
     /* Immediately clear any alert. */
     clearAlert(0);
     $("#loading").fadeIn(SPEED);
+    var $track = $("<div />").css("display", "none").attr("class", "track");
+    $("#tracks").append($track);
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
       $("#loading").fadeOut(SPEED);
       if (error) {
         console.log(error);
         displayAlert(error.message);
+        $track.remove();
       } else {
         if (broadcast) socket.emit("new track", trackObject);
         var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url;
-        var trackDiv = $("<div />").css("display", "none").attr("class", "track");
-        var artworkDiv = $("<div />").attr("class", "artwork").css("background-image", "url(" + artworkUrl + ")");
-        var controlsDiv = $("<div />").attr("class", "controls");
-        var playButton = $("<button />").attr("class", "play");
-        var deleteButton = $("<button />").attr("class", "delete").attr("id", trackObject.id);
-        controlsDiv.append(playButton).append(deleteButton);
+        var $artwork = $("<div />").attr("class", "artwork").css("background-image", "url(" + artworkUrl + ")");
+        var $controls = $("<div />").attr("class", "controls");
+        var $playButton = $("<button />").attr("class", "play");
+        var $deleteButton = $("<button />").attr("class", "delete").attr("id", trackObject.id);
+        controlsDiv.append($playButton).append($deleteButton);
 
-        trackDiv.append(artworkDiv);
-        trackDiv.append('<span class="title">' + track.title + '</span> &mdash; <span class="user">' + track.user.username + '</span>');
-        trackDiv.append(controlsDiv);
-
-        $("#tracks").append(trackDiv);
-        trackDiv.slideDown(SPEED);
+        $track.append($artwork);
+        $track.append('<span class="title">' + track.title + '</span> &mdash; <span class="user">' + track.user.username + '</span>');
+        $track.append($controls);
+        $track.slideDown(SPEED);
       }
     });
   };
 
   var deleteTrack = function(objectId, broadcast) {
-    $("#" + objectId).parents(".track").slideUp(SPEED);
+    $("#" + objectId).parents(".track").slideUp(SPEED, function() { $(this).remove(); });
     if (broadcast) socket.emit("delete track", objectId);
   };
 
