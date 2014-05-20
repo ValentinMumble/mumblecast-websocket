@@ -120,7 +120,7 @@ $(document).ready(function() {
 
   /* Main */
 
-  //initializeCast();
+  initializeCast();
 
   SC.initialize({
     client_id: "d07779451ce9508678bdd995685ad9b0"
