@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+    body {
+      text-align: center;
+      width: 70%;
+      margin: 0 auto;
+    }
+
+    #currentTrack {
+    }
+
+    .artwork {
+      width: 300px;
+      height: 300px;
+      float: left;
+      background-size: cover;
+    }
+    </style>
+    <title>Mumblecast receiver</title>
+  </head>
+  <body>
+    <script type="application/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script type="application/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+    <script type="application/javascript" src="//54.187.163.215:3000/socket.io/socket.io.js"></script>
+    <script type="application/javascript" src="//connect.soundcloud.com/sdk.js"></script>
+    <script type="application/javascript" src="receiver.js"></script>
+
+    <div id="currentTrack" style="display:none">
+      <div class="artwork"></div>
+      <div class="info">
+        <span class="title"></span> &mdash; <span class="user"></span>
+      </div>
+    </div>
+
+  </body>
+</html>

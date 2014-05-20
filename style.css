@@ -60,6 +60,10 @@ input, textarea, canvas {
 	border-radius: 4px;
 }
 
+.playing {
+	background: rgba(142, 193, 90, 0.2);
+}
+
 .artwork {
 	float: left;
 	margin: 4px;

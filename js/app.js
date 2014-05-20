@@ -70,11 +70,12 @@ $(document).ready(function() {
         displayAlert(error.message);
         $track.remove();
       } else {
+        $track.attr("id", trackObject.id);
         var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url;
         var $artwork = $("<div />").attr("class", "artwork").css("background-image", "url(" + artworkUrl + ")");
         var $controls = $("<div />").attr("class", "controls");
         var $playButton = $("<button />").attr("class", "play");
-        var $deleteButton = $("<button />").attr("class", "delete").attr("id", trackObject.id);
+        var $deleteButton = $("<button />").attr("class", "delete");
         $controls.append($playButton).append($deleteButton);
 
         $track.append($artwork);
@@ -86,7 +87,7 @@ $(document).ready(function() {
   };
 
   var deleteTrack = function(objectId) {
-    $("#" + objectId).parents(".track").slideUp(SPEED, function() { $(this).remove(); });
+    $("#" + objectId).slideUp(SPEED, function() { $(this).remove(); });
   };
 
   /* Initial set of tracks, loop through and add to list. */
@@ -97,12 +98,17 @@ $(document).ready(function() {
   });
 
   /* New track received from the socket, append it to our list of current tracks. */
-  socket.on("new track", function(data) {
-    loadTrack(data);
+  socket.on("new track", function(trackObject) {
+    loadTrack(trackObject);
   });
 
   socket.on("delete track", function(id) {
     deleteTrack(id);
+  });
+
+  socket.on("track playing", function(id) {
+    $(".playing").removeClass("playing");
+    $("#" + id).addClass("playing");
   });
 
   /* New socket connected. */
@@ -118,7 +124,11 @@ $(document).ready(function() {
   });
 
   $("#tracks").on("click", ".delete", function() {
-    socket.emit("delete track", $(this).attr("id"));
+    socket.emit("delete track", $(this).parents(".track").attr("id"));
+  });
+
+  $("#tracks").on("click", ".play", function() {
+    socket.emit("play track", $(this).parents(".track").attr("id"));
   });
 
   /* -------- Main -------- */
