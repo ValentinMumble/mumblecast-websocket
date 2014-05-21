@@ -22,7 +22,6 @@ $(document).ready(function() {
     castReceiverManager.onSenderConnected = function(event) {
       console.log('Received Sender Connected event: ' + event.data);
       console.log(window.castReceiverManager.getSender(event.data).userAgent);
-      userConnected(window.castReceiverManager.getSender(event.data).userAgent);
     };
     
     // handler for 'senderdisconnected' event
@@ -89,7 +88,7 @@ $(document).ready(function() {
       SC.stream("/tracks/" + trackObject.trackId, function(sound) {
         if (currentSound != null) currentSound.stop();
         currentSound = sound;
-        currentSound.play();
+        sound.play();
         console.log(sound);
       });
       displayTrack(trackObject);
