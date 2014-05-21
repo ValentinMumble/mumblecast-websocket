@@ -111,9 +111,18 @@ $(document).ready(function() {
     $("#" + id).addClass("playing");
   });
 
-  /* New socket connected. */
-  socket.on("users connected", function(data) {
-    $("#usersConnected").html("users connected: " + data);
+  /* New client connected. */
+  socket.on("clients connected", function(data) {
+    $("#usersConnected").html("clients connected: " + data);
+  });
+  
+  socket.on("receiver connected", function() {
+    displayAlert("receiver connected");
+  });
+  
+  socket.on("receiver disconnected", function() {
+    $(".playing").removeClass("playing");
+    displayAlert("receiver disconnected");
   });
 
   $("#newTrack").click(submitTrack);
@@ -137,5 +146,7 @@ $(document).ready(function() {
   SC.initialize({
     client_id: "d07779451ce9508678bdd995685ad9b0"
   });
+  
+  socket.emit("hello");
 
 });
