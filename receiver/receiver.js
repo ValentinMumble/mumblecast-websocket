@@ -1,9 +1,11 @@
 $(document).ready(function() {
 
   /* Constants. */
+  //var SOCKET_HOST = "192.168.0.23";
   var SOCKET_HOST = "54.187.163.215";
   var SOCKET_PORT = 3000;
   var DEFAULT_ARTWORK_URL = "images/default_artwork.png";
+  var CONSUMER_KEY = "d07779451ce9508678bdd995685ad9b0";
 
   /* Cast */
 
@@ -84,15 +86,24 @@ $(document).ready(function() {
   };
 
   var playTrack = function(trackObject) {
-    if (trackObject) {
-      SC.stream("/tracks/" + trackObject.trackId, function(sound) {
-        if (currentSound != null) currentSound.stop();
-        currentSound = sound;
-        currentSound.play();
-        console.log(sound);
+    var $currentTrack = $("#currentTrack").fadeOut();
+    SC.get("/tracks/" + trackObject.trackId, function(track, error){
+      soundManager.stopAll();
+      var url = track.stream_url;
+      (url.indexOf("secret_token") == -1) ? url = url + '?' : url = url + '&';
+      url = url + 'consumer_key=' + CONSUMER_KEY;
+      var sound = soundManager.createSound({
+        url: url
       });
-      displayTrack(trackObject);
-    }
+      sound.play();
+
+      var artworkUrl = track.artwork_url == null ? DEFAULT_ARTWORK_URL : track.artwork_url.replace("large", "crop");
+      $currentTrack.find(".artwork").hide().attr("src", artworkUrl).load(function() { $(this).fadeIn(); });
+      $currentTrack.find(".title").text(track.title);
+      $currentTrack.find(".user").text(track.user.username);
+      $currentTrack.stop().fadeIn();
+      console.log("playing track: " + track.title);
+    });
   };
 
   var displayTrack = function(trackObject) {
@@ -135,13 +146,14 @@ $(document).ready(function() {
   initializeCastApi();
 
   SC.initialize({
-    client_id: "d07779451ce9508678bdd995685ad9b0"
+    client_id: CONSUMER_KEY
   });
 
-  SC.whenStreamingReady(function() {
-    
-    console.log(soundManager.html5);
+  soundManager.setup({
+    useHTML5Audio: true,
+    preferFlash: false
   });
+    
 
   socket.emit("i am receiver");
 
