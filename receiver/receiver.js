@@ -95,7 +95,7 @@ $(document).ready(function() {
       currentSound = soundManager.createSound({
         url: url
       });
-      sound.play();
+      currentSound.play();
 
       var artworkUrl = track.artwork_url == null ? DEFAULT_ARTWORK_URL : track.artwork_url.replace("large", "crop");
       $currentTrack.find(".artwork").hide().attr("src", artworkUrl).load(function() { $(this).fadeIn(); });
