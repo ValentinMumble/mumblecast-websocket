@@ -89,7 +89,7 @@ $(document).ready(function() {
       SC.stream("/tracks/" + trackObject.trackId, function(sound) {
         if (currentSound != null) currentSound.stop();
         currentSound = sound;
-        //currentSound.play();
+        currentSound.play();
       });
       displayTrack(trackObject);
     }
@@ -103,6 +103,7 @@ $(document).ready(function() {
       $currentTrack.find(".title").text(track.title);
       $currentTrack.find(".user").text(track.user.username);
       $currentTrack.stop().fadeIn();
+      console.log("playing track: " + track.title);
     });
   };
 
@@ -110,11 +111,11 @@ $(document).ready(function() {
   var socket = io.connect("http://" + SOCKET_HOST + ":" + SOCKET_PORT);
 
   /* Initial set of tracks, loop through and add to list. */
-  socket.on("initial tracks", function(data){
+  socket.on("initial tracks", function(data) {
     for (var i = 0; i < data.length; i++) {
       loadTrack(data[i]);
     }
-    playTrack(tracks[0]);
+    //playTrack(tracks[0]);
   });
 
   socket.on("new track", function(trackObject) {
@@ -143,6 +144,6 @@ $(document).ready(function() {
     client_id: "d07779451ce9508678bdd995685ad9b0"
   });
 
-  socket.emit("i am receiver", "");
+  socket.emit("i am receiver");
 
 });
