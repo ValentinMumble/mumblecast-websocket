@@ -139,6 +139,14 @@ $(document).ready(function() {
     client_id: "d07779451ce9508678bdd995685ad9b0"
   });
 
+  SC.whenStreamingReady(function() {
+    console.log(soundManager.html5.usingFlash);
+    soundManager.setup({
+      useHTML5Audio: true,
+      preferFlash: false
+    });
+  });
+
   socket.emit("i am receiver");
 
 });
