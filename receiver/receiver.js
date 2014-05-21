@@ -88,7 +88,7 @@ $(document).ready(function() {
       SC.stream("/tracks/" + trackObject.trackId, function(sound) {
         if (currentSound != null) currentSound.stop();
         currentSound = sound;
-        sound.play();
+        currentSound.play();
         console.log(sound);
       });
       displayTrack(trackObject);
@@ -139,11 +139,11 @@ $(document).ready(function() {
   });
 
   SC.whenStreamingReady(function() {
-    console.log(soundManager.html5.usingFlash);
     soundManager.setup({
       useHTML5Audio: true,
       preferFlash: false
     });
+    console.log(soundManager.html5);
   });
 
   socket.emit("i am receiver");
