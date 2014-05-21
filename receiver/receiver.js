@@ -90,6 +90,7 @@ $(document).ready(function() {
         if (currentSound != null) currentSound.stop();
         currentSound = sound;
         currentSound.play();
+        console.log(sound);
       });
       displayTrack(trackObject);
     }
@@ -132,13 +133,7 @@ $(document).ready(function() {
 
   /* Main */
 
-  window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
-    if (loaded) {
-      initializeCastApi();
-    } else {
-      console.log(errorInfo);
-    }
-  };
+  initializeCastApi();
 
   SC.initialize({
     client_id: "d07779451ce9508678bdd995685ad9b0"
