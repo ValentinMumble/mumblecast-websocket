@@ -92,7 +92,7 @@ $(document).ready(function() {
       var url = track.stream_url;
       (url.indexOf("secret_token") == -1) ? url = url + '?' : url = url + '&';
       url = url + 'consumer_key=' + CONSUMER_KEY;
-      var sound = soundManager.createSound({
+      currentSound = soundManager.createSound({
         url: url
       });
       sound.play();
