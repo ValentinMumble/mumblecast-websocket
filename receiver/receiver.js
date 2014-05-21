@@ -1,8 +1,13 @@
 $(document).ready(function() {
 
+  /* Constants. */
+  var SOCKET_HOST = "54.187.163.215";
+  var SOCKET_PORT = 3000;
+  var DEFAULT_ARTWORK_URL = "images/default_artwork.png";
+
   /* Cast */
 
-  var initializeCast = function() {
+  var initializeCastApi = function() {
     cast.receiver.logger.setLevelValue(0);
     window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
     console.log('Starting Receiver Manager');
@@ -52,12 +57,7 @@ $(document).ready(function() {
     console.log('Receiver Manager started');
   };
 
-  /* Constants. */
-  var SOCKET_HOST = "54.187.163.215";
-  var SOCKET_PORT = 3000;
-  var DEFAULT_ARTWORK_URL = "images/default_artwork.png";
-
-  var queue = [];
+  var tracks = [];
   var index = -1;
   var currentSound = null;
 
@@ -66,41 +66,43 @@ $(document).ready(function() {
     console.log(data);
   };
 
-  var trackAt = function(id) {
-    var i = 0;
-    while (i < queue.length) {
-      if (queue[i].id == id) {
-        return queue[i];
+  var indexOfTrack = function(id) {
+    for (var i = 0; i < tracks.length; i++) {
+      if (tracks[i].id == id) {
+        return i;
       }
-      i++;
     }
     return false;
   };
 
-  var loadTrack = function(trackObject) {
-    queue.push(trackObject);
+  var deleteTrack = function(id) {
+    var i = indexOfTrack(id);
+    if (i) tracks.splice(i, 1);
   };
 
-  var playTrack = function(id) {
-    var trackObject = trackAt(id);
+  var loadTrack = function(trackObject) {
+    tracks.push(trackObject);
+  };
+
+  var playTrack = function(trackObject) {
     if (trackObject) {
       SC.stream("/tracks/" + trackObject.trackId, function(sound) {
         if (currentSound != null) currentSound.stop();
         currentSound = sound;
-        currentSound.play();
+        //currentSound.play();
       });
       displayTrack(trackObject);
     }
   };
 
   var displayTrack = function(trackObject) {
+    var $currentTrack = $("#currentTrack").fadeOut();
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
-      var $currentTrack = $("#currentTrack");
       var artworkUrl = track.artwork_url == null ? DEFAULT_ARTWORK_URL : track.artwork_url.replace("large", "crop");
-      $currentTrack.find(".artwork").css("background-image", "url(" + artworkUrl + ")");
+      $currentTrack.find(".artwork").hide().attr("src", artworkUrl).load(function() { $(this).fadeIn(); });
       $currentTrack.find(".title").text(track.title);
       $currentTrack.find(".user").text(track.user.username);
-      $currentTrack.fadeIn();
+      $currentTrack.stop().fadeIn();
     });
   };
 
@@ -112,15 +114,30 @@ $(document).ready(function() {
     for (var i = 0; i < data.length; i++) {
       loadTrack(data[i]);
     }
+    playTrack(tracks[0]);
+  });
+
+  socket.on("new track", function(trackObject) {
+    loadTrack(trackObject);
+  });
+
+  socket.on("delete track", function(id) {
+    deleteTrack(id);
   });
 
   socket.on("play track", function(id) {
-    playTrack(id);
+    playTrack(tracks[indexOfTrack(id)]);
   });
 
   /* Main */
 
-  initializeCast();
+  window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
+    if (loaded) {
+      initializeCastApi();
+    } else {
+      console.log(errorInfo);
+    }
+  };
 
   SC.initialize({
     client_id: "d07779451ce9508678bdd995685ad9b0"
