@@ -139,10 +139,7 @@ $(document).ready(function() {
   });
 
   SC.whenStreamingReady(function() {
-    soundManager.setup({
-      useHTML5Audio: true,
-      preferFlash: false
-    });
+    
     console.log(soundManager.html5);
   });
 
