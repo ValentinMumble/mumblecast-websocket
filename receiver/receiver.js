@@ -78,6 +78,14 @@ $(document).ready(function() {
     return DEFAULT_ARTWORK_URLS[Math.floor(Math.random() * DEFAULT_ARTWORK_URLS.length)];
   };
 
+  var millisecondsToHms = function(d) {
+    d = Number(d) / 1000;
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+    return ((h > 0 ? h + ":" : "") + (m > 0 ? (h > 0 && m < 10 ? "0" : "") + m + ":" : "0:") + (s < 10 ? "0" : "") + s);
+  };
+
   var indexOfTrack = function(id) {
     for (var i = 0; i < tracks.length; i++) {
       if (tracks[i].id == id) {
@@ -99,6 +107,8 @@ $(document).ready(function() {
 
   var playTrack = function(trackObject) {
     var $currentTrack = $("#currentTrack").fadeOut();
+    var $elapsed = $currentTrack.find(".elapsed").text("");
+    var $remaining = $currentTrack.find(".remaining").text("");
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
       soundManager.stopAll();
       if (current.sound != null) current.sound.destruct();
@@ -133,8 +143,9 @@ $(document).ready(function() {
       var wp = options.whileplaying;
       options.whileplaying = function() {
         wp();
-        $currentTrack.find(".elapsed").text(Math.floor(this.position / 1000));
-        $currentTrack.find(".remaining").text(Math.floor((this.duration - this.position) / 1000));
+        $elapsed.text(millisecondsToHms(this.position));
+        // +1 because of soundManager2 HTML5 bug
+        $remaining.text("-" + millisecondsToHms(this.duration - this.position + 1));
       };
 
       SC.stream(track.uri, options, function(sound){
