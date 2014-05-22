@@ -15,34 +15,30 @@ $(document).ready(function() {
     "images/default_artwork_yellow.png"
   ];
 
-  /* Cast */
+  /* Cast { */
 
   var initializeCastApi = function() {
     cast.receiver.logger.setLevelValue(0);
     window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
     console.log('Starting Receiver Manager');
     
-    // handler for the 'ready' event
     castReceiverManager.onReady = function(event) {
       console.log('Received Ready event: ' + JSON.stringify(event.data));
       window.castReceiverManager.setApplicationState("Application status is ready...");
     };
     
-    // handler for 'senderconnected' event
     castReceiverManager.onSenderConnected = function(event) {
       console.log('Received Sender Connected event: ' + event.data);
       console.log(window.castReceiverManager.getSender(event.data).userAgent);
     };
     
-    // handler for 'senderdisconnected' event
     castReceiverManager.onSenderDisconnected = function(event) {
       console.log('Received Sender Disconnected event: ' + event.data);
       if (window.castReceiverManager.getSenders().length == 0) {
-        window.close();
+        //window.close();
       }
     };
     
-    // handler for 'systemvolumechanged' event
     castReceiverManager.onSystemVolumeChanged = function(event) {
       console.log('Received System Volume Changed event: ' + event.data['level'] + ' ' + event.data['muted']);
     };
@@ -50,7 +46,6 @@ $(document).ready(function() {
     // create a CastMessageBus to handle messages for a custom namespace
     window.messageBus = window.castReceiverManager.getCastMessageBus('urn:x-cast:com.mumble.mumblecast');
 
-    // handler for the CastMessageBus message event
     window.messageBus.onMessage = function(event) {
       console.log('Message [' + event.senderId + ']: ' + event.data);
       // display the message from the sender
@@ -66,13 +61,15 @@ $(document).ready(function() {
     console.log('Receiver Manager started');
   };
 
-  var tracks = [];
-  var current = {index: -1, object: null, sound: null};
-
   /* Handle the data coming from the cast manager. */
   var handleData = function(data) {
     console.log(data);
   };
+
+  /* } Cast */
+
+  var tracks = [];
+  var current = {index: -1, sound: null, paused: false};
 
   var getRandomDefaultArtworkUrl = function() {
     return DEFAULT_ARTWORK_URLS[Math.floor(Math.random() * DEFAULT_ARTWORK_URLS.length)];
@@ -106,6 +103,7 @@ $(document).ready(function() {
   };
 
   var playTrack = function(trackObject) {
+    $(".disclaimer").hide();
     var $currentTrack = $("#currentTrack").fadeOut();
     var $elapsed = $currentTrack.find(".elapsed").text("");
     var $remaining = $currentTrack.find(".remaining").text("");
@@ -151,6 +149,7 @@ $(document).ready(function() {
       SC.stream(track.uri, options, function(sound){
         current.sound = sound;
         current.sound.play();
+        current.paused = false;
         socket.emit("track playing", trackObject.id);
       });
     });
@@ -180,18 +179,34 @@ $(document).ready(function() {
     }
   });
 
+  /* When the server tells to add this track. */
   socket.on("new track", function(trackObject) {
     loadTrack(trackObject);
   });
 
+  /* When the server tells to delete this track. */
   socket.on("delete track", function(id) {
     var deletedId = deleteTrack(id);
     if (deletedId <= current.index) current.index--;
   });
 
+  /* When the server tells to play this track. */
   socket.on("play track", function(id) {
     current.index = indexOfTrack(id);
     playTrack(tracks[current.index]);
+  });
+
+  /* When the server tells to pause the current track. */
+  socket.on("pause", function() {
+    if (current.sound != null) {
+      current.sound.togglePause();
+      current.paused = !current.paused;
+      if (current.paused) {
+        socket.emit("paused");
+      } else {
+        socket.emit("unpaused");
+      }
+    }
   });
 
   /* Main */
