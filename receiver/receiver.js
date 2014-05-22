@@ -4,8 +4,16 @@ $(document).ready(function() {
   //var SOCKET_HOST = "192.168.0.23";
   var SOCKET_HOST = "54.187.163.215";
   var SOCKET_PORT = 3000;
-  var DEFAULT_ARTWORK_URL = "images/default_artwork.png";
   var CONSUMER_KEY = "d07779451ce9508678bdd995685ad9b0";
+  var DEFAULT_ARTWORK_URLS = [
+    "images/default_artwork_blue.png",
+    "images/default_artwork_green.png",
+    "images/default_artwork_grey.png",
+    "images/default_artwork_orange.png",
+    "images/default_artwork_purple.png",
+    "images/default_artwork_red.png",
+    "images/default_artwork_yellow.png"
+  ];
 
   /* Cast */
 
@@ -59,11 +67,15 @@ $(document).ready(function() {
   };
 
   var tracks = [];
-  var currentSound = null;  
+  var current = {index: -1, object: null, sound: null};
 
   /* Handle the data coming from the cast manager. */
   var handleData = function(data) {
     console.log(data);
+  };
+
+  var getRandomDefaultArtworkUrl = function() {
+    return DEFAULT_ARTWORK_URLS[Math.floor(Math.random() * DEFAULT_ARTWORK_URLS.length)];
   };
 
   var indexOfTrack = function(id) {
@@ -72,12 +84,13 @@ $(document).ready(function() {
         return i;
       }
     }
-    return false;
+    return -1;
   };
 
   var deleteTrack = function(id) {
     var i = indexOfTrack(id);
     if (i) tracks.splice(i, 1);
+    return i;
   };
 
   var loadTrack = function(trackObject) {
@@ -88,32 +101,24 @@ $(document).ready(function() {
     var $currentTrack = $("#currentTrack").fadeOut();
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
       soundManager.stopAll();
-      if (currentSound != null) currentSound.destruct();
-      
+      if (current.sound != null) current.sound.destruct();
 
-      /*var url = track.stream_url;
-      (url.indexOf("secret_token") == -1) ? url = url + '?' : url = url + '&';
-      url = url + 'consumer_key=' + CONSUMER_KEY;
-      currentSound = soundManager.createSound({
-        url: url
-      });
-      currentSound.play();*/
-
-      
-
-      var artworkUrl = track.artwork_url == null ? DEFAULT_ARTWORK_URL : track.artwork_url.replace("large", "crop");
-      $currentTrack.find(".artwork").hide().attr("src", artworkUrl).load(function() { $(this).fadeIn(); });
+      var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url.replace("large", "t300x300");
+      var $artwork = $currentTrack.find(".artwork");
+      if ($artwork.attr("src") != artworkUrl) {
+        $artwork.hide().attr("src", artworkUrl).load(function() { $artwork.fadeIn(); });
+      }
       $currentTrack.find(".title").text(track.title);
       $currentTrack.find(".user").text(track.user.username);
       $currentTrack.stop().fadeIn();
 
-      var defaultColor = "#2A2A2A";
-      var loadedColor = "#303030";
+      var defaultColor = "#222";
+      var loadedColor = "#2A2A2A";
       var playedColor = "#ff6600";
 
-      $("#waveformContainer").empty();
+      $("#waveform").empty();
       var waveform = new Waveform({
-        container: $("#waveformContainer")[0],
+        container: $("#waveform")[0],
         innerColor: defaultColor
       });
 
@@ -124,11 +129,27 @@ $(document).ready(function() {
         playedColor: playedColor
       });
 
+      options.onfinish = playNext;
+      var wp = options.whileplaying;
+      options.whileplaying = function() {
+        wp();
+        $currentTrack.find(".elapsed").text(Math.floor(this.position / 1000));
+        $currentTrack.find(".remaining").text(Math.floor((this.duration - this.position) / 1000));
+      };
+
       SC.stream(track.uri, options, function(sound){
-        currentSound = sound;
-        currentSound.play();
+        current.sound = sound;
+        current.sound.play();
+        socket.emit("track playing", trackObject.id);
       });
     });
+  };
+
+  var playNext = function() {
+    if (current.index < tracks.length - 1) {
+      current.index++;
+      playTrack(tracks[current.index]);
+    }
   };
 
   /* Connection to the node/websockets server. */
@@ -146,11 +167,13 @@ $(document).ready(function() {
   });
 
   socket.on("delete track", function(id) {
-    deleteTrack(id);
+    var deletedId = deleteTrack(id);
+    if (deletedId <= current.index) current.index--;
   });
 
   socket.on("play track", function(id) {
-    playTrack(tracks[indexOfTrack(id)]);
+    current.index = indexOfTrack(id);
+    playTrack(tracks[current.index]);
   });
 
   /* Main */
