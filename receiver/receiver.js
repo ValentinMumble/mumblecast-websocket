@@ -205,7 +205,7 @@ $(document).ready(function() {
   soundManager.setup({
     useHTML5Audio: true,
     preferFlash: false,
-    debugMode: false
+    debugMode: true
   });
 
   socket.emit("i am receiver");
