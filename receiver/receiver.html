@@ -5,6 +5,7 @@
     body {
       text-align: center;
       background: #111;
+      font-family: 'Oswald', sans-serif;
     }
 
     #content {
@@ -35,22 +36,30 @@
       height: 100%;
       left: -50%;
       top: -50%;
-      background: #ccc;
+      background: #222;
+      color: #ddd;
     }
 
     .artwork {
       width: 300px;
       height: 300px;
     }
+
+    #waveformContainer {
+      width: 500px;
+      height: 100px;
+    }
     </style>
     <title>Mumblecast receiver</title>
   </head>
   <body>
+    <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
     <script type="application/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script type="application/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
     <script type="application/javascript" src="//54.187.163.215:3000/socket.io/socket.io.js"></script>
     <script type="application/javascript" src="//connect.soundcloud.com/sdk.js"></script>
     <script type="application/javascript" src="soundmanager2.js"></script>
+    <script type="application/javascript" src="waveform.js"></script>
     <script type="application/javascript" src="receiver.js"></script>
 
     <div id="content">
@@ -62,6 +71,7 @@
           <div class="info">
             <span class="title"></span> &mdash; <span class="user"></span>
           </div>
+          <div id="waveformContainer"></div>
         </div>
       </div>
     </div>

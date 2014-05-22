@@ -59,8 +59,7 @@ $(document).ready(function() {
   };
 
   var tracks = [];
-  var index = -1;
-  var currentSound = null;
+  var currentSound = null;  
 
   /* Handle the data coming from the cast manager. */
   var handleData = function(data) {
@@ -89,32 +88,46 @@ $(document).ready(function() {
     var $currentTrack = $("#currentTrack").fadeOut();
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
       soundManager.stopAll();
-      var url = track.stream_url;
+      if (currentSound != null) currentSound.destruct();
+      
+
+      /*var url = track.stream_url;
       (url.indexOf("secret_token") == -1) ? url = url + '?' : url = url + '&';
       url = url + 'consumer_key=' + CONSUMER_KEY;
       currentSound = soundManager.createSound({
         url: url
       });
-      currentSound.play();
+      currentSound.play();*/
+
+      
 
       var artworkUrl = track.artwork_url == null ? DEFAULT_ARTWORK_URL : track.artwork_url.replace("large", "crop");
       $currentTrack.find(".artwork").hide().attr("src", artworkUrl).load(function() { $(this).fadeIn(); });
       $currentTrack.find(".title").text(track.title);
       $currentTrack.find(".user").text(track.user.username);
       $currentTrack.stop().fadeIn();
-      console.log("playing track: " + track.title);
-    });
-  };
 
-  var displayTrack = function(trackObject) {
-    var $currentTrack = $("#currentTrack").fadeOut();
-    SC.get("/tracks/" + trackObject.trackId, function(track, error){
-      var artworkUrl = track.artwork_url == null ? DEFAULT_ARTWORK_URL : track.artwork_url.replace("large", "crop");
-      $currentTrack.find(".artwork").hide().attr("src", artworkUrl).load(function() { $(this).fadeIn(); });
-      $currentTrack.find(".title").text(track.title);
-      $currentTrack.find(".user").text(track.user.username);
-      $currentTrack.stop().fadeIn();
-      console.log("playing track: " + track.title);
+      var defaultColor = "#2A2A2A";
+      var loadedColor = "#303030";
+      var playedColor = "#ff6600";
+
+      $("#waveformContainer").empty();
+      var waveform = new Waveform({
+        container: $("#waveformContainer")[0],
+        innerColor: defaultColor
+      });
+
+      waveform.dataFromSoundCloudTrack(track);
+      var options = waveform.optionsForSyncedStream({
+        defaultColor: defaultColor,
+        loadedColor: loadedColor,
+        playedColor: playedColor
+      });
+
+      SC.stream(track.uri, options, function(sound){
+        currentSound = sound;
+        currentSound.play();
+      });
     });
   };
 
@@ -126,7 +139,6 @@ $(document).ready(function() {
     for (var i = 0; i < data.length; i++) {
       loadTrack(data[i]);
     }
-    //playTrack(tracks[0]);
   });
 
   socket.on("new track", function(trackObject) {
@@ -143,7 +155,7 @@ $(document).ready(function() {
 
   /* Main */
 
-  initializeCastApi();
+  //initializeCastApi();
 
   SC.initialize({
     client_id: CONSUMER_KEY
@@ -153,7 +165,6 @@ $(document).ready(function() {
     useHTML5Audio: true,
     preferFlash: false
   });
-    
 
   socket.emit("i am receiver");
 
