@@ -163,6 +163,13 @@ $(document).ready(function() {
     }
   };
 
+  var playPrevious = function() {
+    if (current.index > 0) {
+      current.index--;
+      playTrack(tracks[current.index]);
+    }
+  };
+
   /* Connection to the node/websockets server. */
   var socket = io.connect("http://" + SOCKET_HOST + ":" + SOCKET_PORT);
 
@@ -189,7 +196,7 @@ $(document).ready(function() {
 
   /* Main */
 
-  //initializeCastApi();
+  initializeCastApi();
 
   SC.initialize({
     client_id: CONSUMER_KEY
@@ -197,7 +204,8 @@ $(document).ready(function() {
 
   soundManager.setup({
     useHTML5Audio: true,
-    preferFlash: false
+    preferFlash: false,
+    debugMode: false
   });
 
   socket.emit("i am receiver");
