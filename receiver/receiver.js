@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
   /* Constants. */
-  //var SOCKET_HOST = "192.168.0.23";
+
   var SOCKET_HOST = "54.187.163.215";
   var SOCKET_PORT = 3000;
   var CONSUMER_KEY = "d07779451ce9508678bdd995685ad9b0";
@@ -12,10 +12,10 @@ $(document).ready(function() {
     "images/default_artwork_orange.png",
     "images/default_artwork_purple.png",
     "images/default_artwork_red.png",
-    "images/default_artwork_yellow.png"
+    "images/default_artwork_yellue.png"
   ];
 
-  /* Cast { */
+  /* ------ Cast { ------ */
 
   var initializeCastApi = function() {
     cast.receiver.logger.setLevelValue(0);
@@ -66,7 +66,7 @@ $(document).ready(function() {
     console.log(data);
   };
 
-  /* } Cast */
+  /* ------ } Cast ------ */
 
   var tracks = [];
   var current = {index: -1, sound: null, paused: false};
@@ -186,6 +186,8 @@ $(document).ready(function() {
     }
   };
 
+  /* ------ Socket { ------ */
+
   /* Connection to the node/websockets server. */
   var socket = io.connect("http://" + SOCKET_HOST + ":" + SOCKET_PORT);
 
@@ -216,7 +218,15 @@ $(document).ready(function() {
   /* When the server tells to pause the current track. */
   socket.on("pause", pauseTrack);
 
-  /* Main */
+  /* When the server tells to play the next track. */
+  socket.on("next", playNext);
+
+  /* When the server tells to play the previous track. */
+  socket.on("previous", playPrevious);
+
+  /* ------ } Socket ------ */
+
+  /* ------ Main ------ */
 
   initializeCastApi();
 
