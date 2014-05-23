@@ -103,10 +103,11 @@ $(document).ready(function() {
   };
 
   var playTrack = function(trackObject) {
-    $(".disclaimer").hide();
-    var $currentTrack = $("#currentTrack").fadeOut();
+    $(".disclaimer").fadeOut();
+    var $currentTrack = $("#currentTrack").addClass("hidden");
     var $elapsed = $currentTrack.find(".elapsed").text("");
     var $remaining = $currentTrack.find(".remaining").text("");
+    var $comment = $currentTrack.find(".comment").text("");
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
       soundManager.stopAll();
       if (current.sound != null) current.sound.destruct();
@@ -114,11 +115,11 @@ $(document).ready(function() {
       var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url.replace("large", "t300x300");
       var $artwork = $currentTrack.find(".artwork");
       if ($artwork.attr("src") != artworkUrl) {
-        $artwork.hide().attr("src", artworkUrl).load(function() { $artwork.fadeIn(); });
+        $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { $artwork.removeClass("hidden"); });
       }
       $currentTrack.find(".title").text(track.title);
       $currentTrack.find(".user").text(track.user.username);
-      $currentTrack.stop().fadeIn();
+      $currentTrack.removeClass("hidden");
 
       var defaultColor = "#222";
       var loadedColor = "#2A2A2A";
@@ -145,6 +146,9 @@ $(document).ready(function() {
         // +1 because of soundManager2 HTML5 bug
         $remaining.text("-" + millisecondsToHms(this.duration - this.position + 1));
       };
+      options.ontimedcomments = function(comments) {
+        $comment.text(comments[0].user.username + ": " + comments[0].body);
+      };
 
       SC.stream(track.uri, options, function(sound){
         current.sound = sound;
@@ -153,6 +157,19 @@ $(document).ready(function() {
         socket.emit("track playing", trackObject.id);
       });
     });
+  };
+
+  var pauseTrack = function() {
+    if (current.sound != null) {
+      current.sound.togglePause();
+      current.paused = !current.paused;
+      $(".cover .overlay").toggleClass("paused");
+      if (current.paused) {
+        socket.emit("paused");
+      } else {
+        socket.emit("unpaused");
+      }
+    }
   };
 
   var playNext = function() {
@@ -197,17 +214,7 @@ $(document).ready(function() {
   });
 
   /* When the server tells to pause the current track. */
-  socket.on("pause", function() {
-    if (current.sound != null) {
-      current.sound.togglePause();
-      current.paused = !current.paused;
-      if (current.paused) {
-        socket.emit("paused");
-      } else {
-        socket.emit("unpaused");
-      }
-    }
-  });
+  socket.on("pause", pauseTrack);
 
   /* Main */
 
