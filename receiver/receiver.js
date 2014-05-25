@@ -104,22 +104,31 @@ $(document).ready(function() {
 
   var playTrack = function(trackObject) {
     $(".disclaimer").fadeOut();
-    var $currentTrack = $("#currentTrack").addClass("hidden");
-    var $elapsed = $currentTrack.find(".elapsed").text("");
-    var $remaining = $currentTrack.find(".remaining").text("");
-    var $comment = $currentTrack.find(".comment").text("");
-    SC.get("/tracks/" + trackObject.trackId, function(track, error){
-      soundManager.stopAll();
-      if (current.sound != null) current.sound.destruct();
+    soundManager.stopAll();
+    if (current.sound != null) current.sound.destruct();
+    $("#youtubePlayer" ).replaceWith('<div id="youtubePlayer"></div>');
+    if (trackObject.provider == "soundcloud") {
+      playSoundCloudTrack(trackObject);
+    } else if (trackObject.provider == "youtube") {
+      playYouTubeTrack(trackObject);
+    }
+  };
 
+  var playSoundCloudTrack = function(trackObject) {
+    $("#youtubeContainer").hide();
+    var $soundcloudTrack = $("#soundcloudTrack").addClass("hidden").show();
+    var $elapsed = $soundcloudTrack.find(".elapsed").text("");
+    var $remaining = $soundcloudTrack.find(".remaining").text("");
+    var $comment = $soundcloudTrack.find(".comment").text("");
+    SC.get("/tracks/" + trackObject.trackId, function(track, error){
       var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url.replace("large", "t300x300");
-      var $artwork = $currentTrack.find(".artwork");
+      var $artwork = $soundcloudTrack.find(".artwork");
       if ($artwork.attr("src") != artworkUrl) {
         $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { $artwork.removeClass("hidden"); });
       }
-      $currentTrack.find(".title").text(track.title);
-      $currentTrack.find(".user").text(track.user.username);
-      $currentTrack.removeClass("hidden");
+      $soundcloudTrack.find(".title").text(track.title);
+      $soundcloudTrack.find(".user").text(track.user.username);
+      $soundcloudTrack.removeClass("hidden");
 
       var defaultColor = "#222";
       var loadedColor = "#2A2A2A";
@@ -156,6 +165,21 @@ $(document).ready(function() {
         current.paused = false;
         socket.emit("track playing", trackObject.id);
       });
+    });
+  };
+
+  var playYouTubeTrack = function(trackObject) {
+    $("#soundcloudTrack").hide();
+    $("#youtubeContainer").addClass("hidden").show();
+    var youtubePlayer = new YT.Player('youtubePlayer', {
+      videoId: trackObject.trackId,
+      playerVars: {
+        "autoplay": 1
+      },
+      events: {
+        'onReady': function() { $("#youtubeContainer").removeClass("hidden"); },
+        'onStateChange':  null
+      }
     });
   };
 
