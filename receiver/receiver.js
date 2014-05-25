@@ -69,7 +69,8 @@ $(document).ready(function() {
   /* ------ } Cast ------ */
 
   var tracks = [];
-  var current = {index: -1, sound: null, paused: false};
+  var current = {index: -1, trackObject: null, sound: null, paused: false};
+  var youtubePlayer = null;
 
   var getRandomDefaultArtworkUrl = function() {
     return DEFAULT_ARTWORK_URLS[Math.floor(Math.random() * DEFAULT_ARTWORK_URLS.length)];
@@ -102,33 +103,45 @@ $(document).ready(function() {
     tracks.push(trackObject);
   };
 
+  var clearPlayers = function() {
+    /* Stop soundManager2 & destruct sound if any. */
+    soundManager.stopAll();
+    if (current.sound != null) {
+      current.sound.destruct();
+      current.sound = null;
+    }
+    /* Stop YouTube playing & loading. */
+    youtubePlayer.stopVideo();
+  };
+
   var playTrack = function(trackObject) {
     $(".disclaimer").fadeOut();
-    soundManager.stopAll();
-    if (current.sound != null) current.sound.destruct();
-    $("#youtubePlayer" ).replaceWith('<div id="youtubePlayer"></div>');
+    clearPlayers();
+    current.trackObject = trackObject;
     if (trackObject.provider == "soundcloud") {
       playSoundCloudTrack(trackObject);
     } else if (trackObject.provider == "youtube") {
       playYouTubeTrack(trackObject);
     }
+    current.paused = false;
+    socket.emit("track playing", trackObject.id);
   };
 
   var playSoundCloudTrack = function(trackObject) {
-    $("#youtubeContainer").hide();
-    var $soundcloudTrack = $("#soundcloudTrack").addClass("hidden").show();
-    var $elapsed = $soundcloudTrack.find(".elapsed").text("");
-    var $remaining = $soundcloudTrack.find(".remaining").text("");
-    var $comment = $soundcloudTrack.find(".comment").text("");
+    $(".player").not("#soundcloudPlayer").hide();
+    var $soundcloudPlayer = $("#soundcloudPlayer").addClass("hidden").show();
+    var $elapsed = $soundcloudPlayer.find(".elapsed").text("");
+    var $remaining = $soundcloudPlayer.find(".remaining").text("");
+    var $comment = $soundcloudPlayer.find(".comment").text("");
     SC.get("/tracks/" + trackObject.trackId, function(track, error){
       var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url.replace("large", "t300x300");
-      var $artwork = $soundcloudTrack.find(".artwork");
+      var $artwork = $soundcloudPlayer.find(".artwork");
       if ($artwork.attr("src") != artworkUrl) {
         $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { $artwork.removeClass("hidden"); });
       }
-      $soundcloudTrack.find(".title").text(track.title);
-      $soundcloudTrack.find(".user").text(track.user.username);
-      $soundcloudTrack.removeClass("hidden");
+      $soundcloudPlayer.find(".title").text(track.title);
+      $soundcloudPlayer.find(".user").text(track.user.username);
+      $soundcloudPlayer.removeClass("hidden");
 
       var defaultColor = "#222";
       var loadedColor = "#2A2A2A";
@@ -162,32 +175,27 @@ $(document).ready(function() {
       SC.stream(track.uri, options, function(sound){
         current.sound = sound;
         current.sound.play();
-        current.paused = false;
-        socket.emit("track playing", trackObject.id);
       });
     });
   };
 
   var playYouTubeTrack = function(trackObject) {
-    $("#soundcloudTrack").hide();
-    $("#youtubeContainer").addClass("hidden").show();
-    var youtubePlayer = new YT.Player('youtubePlayer', {
-      videoId: trackObject.trackId,
-      playerVars: {
-        "autoplay": 1
-      },
-      events: {
-        'onReady': function() { $("#youtubeContainer").removeClass("hidden"); },
-        'onStateChange':  null
-      }
-    });
+    $(".player").not("#youtubePlayer").hide();
+    $("#youtubePlayer").addClass("hidden").show();
+    youtubePlayer.loadVideoById(trackObject.trackId);
+    $("#youtubePlayer").removeClass("hidden");
   };
 
   var pauseTrack = function() {
-    if (current.sound != null) {
-      current.sound.togglePause();
-      current.paused = !current.paused;
-      $(".cover .overlay").toggleClass("paused");
+    if (current.trackObject != null) {
+      if (current.trackObject.provider == "soundcloud") {
+        current.sound.togglePause();
+        $(".cover .overlay").toggleClass("paused");
+        current.paused = !current.paused;
+      } else if (current.trackObject.provider == "youtube") {
+        current.paused ? youtubePlayer.playVideo() : youtubePlayer.pauseVideo();
+        current.paused = !current.paused;
+      }
       if (current.paused) {
         socket.emit("paused");
       } else {
@@ -220,6 +228,17 @@ $(document).ready(function() {
     for (var i = 0; i < data.length; i++) {
       loadTrack(data[i]);
     }
+
+    /* Initialize YouTube player. */
+    youtubePlayer = new YT.Player('youtubePlaceholder', {
+      playerVars: {
+        "autoplay": 1
+      },
+      events: {
+        'onReady': null,
+        'onStateChange':  null
+      }
+    });
   });
 
   /* When the server tells to add this track. */
