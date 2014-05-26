@@ -133,56 +133,54 @@ $(document).ready(function() {
     var $elapsed = $soundcloudPlayer.find(".elapsed").text("");
     var $remaining = $soundcloudPlayer.find(".remaining").text("");
     var $comment = $soundcloudPlayer.find(".comment").text("");
-    SC.get("/tracks/" + trackObject.trackId, function(track, error){
-      var artworkUrl = track.artwork_url == null ? getRandomDefaultArtworkUrl() : track.artwork_url.replace("large", "t300x300");
-      var $artwork = $soundcloudPlayer.find(".artwork");
-      if ($artwork.attr("src") != artworkUrl) {
-        $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { $artwork.removeClass("hidden"); });
-      }
-      $soundcloudPlayer.find(".title").text(track.title);
-      $soundcloudPlayer.find(".user").text(track.user.username);
-      $soundcloudPlayer.removeClass("hidden");
+    var artworkUrl = trackObject.artworkUrl == null ? getRandomDefaultArtworkUrl() : trackObject.artworkUrl.replace("large", "t300x300");
+    var $artwork = $soundcloudPlayer.find(".artwork");
+    if ($artwork.attr("src") != artworkUrl) {
+      $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { $artwork.removeClass("hidden"); });
+    }
+    $soundcloudPlayer.find(".title").text(trackObject.title);
+    $soundcloudPlayer.find(".artist").text(trackObject.artist);
+    $soundcloudPlayer.removeClass("hidden");
 
-      var defaultColor = "#222";
-      var loadedColor = "#2A2A2A";
-      var playedColor = "#ff6600";
+    var defaultColor = "#222";
+    var loadedColor = "#2A2A2A";
+    var playedColor = "#ff6600";
 
-      $("#waveform").empty();
-      var waveform = new Waveform({
-        container: $("#waveform")[0],
-        innerColor: defaultColor
-      });
+    $("#waveform").empty();
+    var waveform = new Waveform({
+      container: $("#waveform")[0],
+      innerColor: defaultColor
+    });
 
-      waveform.dataFromSoundCloudTrack(track);
-      var options = waveform.optionsForSyncedStream({
-        defaultColor: defaultColor,
-        loadedColor: loadedColor,
-        playedColor: playedColor
-      });
+    waveform.dataFromSoundCloudTrack({waveform_url: trackObject.waveformUrl});
+    var options = waveform.optionsForSyncedStream({
+      defaultColor: defaultColor,
+      loadedColor: loadedColor,
+      playedColor: playedColor
+    });
 
-      options.onfinish = playNext;
-      var wp = options.whileplaying;
-      options.whileplaying = function() {
-        wp();
-        $elapsed.text(millisecondsToHms(this.position));
-        // +1 because of soundManager2 HTML5 bug
-        $remaining.text("-" + millisecondsToHms(this.duration - this.position + 1));
-      };
-      options.ontimedcomments = function(comments) {
-        $comment.text(comments[0].user.username + ": " + comments[0].body);
-      };
+    options.onfinish = playNext;
+    var wp = options.whileplaying;
+    options.whileplaying = function() {
+      wp();
+      $elapsed.text(millisecondsToHms(this.position));
+      // +1 because of soundManager2 HTML5 bug
+      $remaining.text("-" + millisecondsToHms(this.duration - this.position + 1));
+    };
+    options.ontimedcomments = function(comments) {
+      $comment.text(comments[0].user.username + ": " + comments[0].body);
+    };
 
-      SC.stream(track.uri, options, function(sound){
-        current.sound = sound;
-        current.sound.play();
-      });
+    SC.stream("/tracks/" + trackObject.providerId, options, function(sound){
+      current.sound = sound;
+      current.sound.play();
     });
   };
 
   var playYouTubeTrack = function(trackObject) {
     $(".player").not("#youtubePlayer").hide();
     $("#youtubePlayer").addClass("hidden").show();
-    youtubePlayer.loadVideoById(trackObject.trackId);
+    youtubePlayer.loadVideoById(trackObject.providerId);
     $("#youtubePlayer").removeClass("hidden");
   };
 
@@ -244,12 +242,12 @@ $(document).ready(function() {
   });
 
   /* When the server tells to add this track. */
-  socket.on("new track", function(trackObject) {
+  socket.on("track added", function(trackObject) {
     loadTrack(trackObject);
   });
 
   /* When the server tells to delete this track. */
-  socket.on("delete track", function(id) {
+  socket.on("track deleted", function(id) {
     var deletedId = deleteTrack(id);
     if (deletedId <= current.index) current.index--;
   });
