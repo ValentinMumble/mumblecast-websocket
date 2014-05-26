@@ -232,11 +232,13 @@ $(document).ready(function() {
     /* Initialize YouTube player. */
     youtubePlayer = new YT.Player('youtubePlaceholder', {
       playerVars: {
-        "autoplay": 1
+        autoplay: 1,
+        controls: 0
       },
       events: {
-        'onReady': null,
-        'onStateChange':  null
+        onStateChange: function(event) {
+          if (event.data === 0) playNext();
+        }
       }
     });
   });
@@ -280,7 +282,6 @@ $(document).ready(function() {
   soundManager.setup({
     useHTML5Audio: true,
     preferFlash: false,
-    debugMode: true
   });
 
   socket.emit("i am receiver");
