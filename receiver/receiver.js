@@ -69,7 +69,7 @@ $(document).ready(function() {
   /* ------ } Cast ------ */
 
   var tracks = [];
-  var current = {index: -1, trackObject: null, sound: null, paused: false};
+  var current = {index: -1, trackObject: null, sound: null, paused: true};
   var youtubePlayer = null;
 
   var getRandomDefaultArtworkUrl = function() {
@@ -123,12 +123,14 @@ $(document).ready(function() {
     } else if (trackObject.provider == "youtube") {
       playYouTubeTrack(trackObject);
     }
-    current.paused = false;
     socket.emit("track playing", trackObject.id);
+    current.paused = false;
+    socket.emit("paused", current.paused);
   };
 
   var playSoundCloudTrack = function(trackObject) {
     $(".player").not("#soundcloudPlayer").hide();
+    $(".cover .overlay").removeClass("paused");
     var $soundcloudPlayer = $("#soundcloudPlayer").addClass("hidden").show();
     var $elapsed = $soundcloudPlayer.find(".elapsed").text("");
     var $remaining = $soundcloudPlayer.find(".remaining").text("");
@@ -189,16 +191,11 @@ $(document).ready(function() {
       if (current.trackObject.provider == "soundcloud") {
         current.sound.togglePause();
         $(".cover .overlay").toggleClass("paused");
-        current.paused = !current.paused;
       } else if (current.trackObject.provider == "youtube") {
         current.paused ? youtubePlayer.playVideo() : youtubePlayer.pauseVideo();
-        current.paused = !current.paused;
       }
-      if (current.paused) {
-        socket.emit("paused");
-      } else {
-        socket.emit("unpaused");
-      }
+      current.paused = !current.paused;
+      socket.emit("paused", current.paused);
     }
   };
 
