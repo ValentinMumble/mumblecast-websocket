@@ -86,9 +86,7 @@ $(document).ready(function() {
 
   var indexOfTrack = function(id) {
     for (var i = 0; i < tracks.length; i++) {
-      if (tracks[i].id == id) {
-        return i;
-      }
+      if (tracks[i].id == id) return i;
     }
     return -1;
   };
@@ -174,8 +172,11 @@ $(document).ready(function() {
     };
 
     SC.stream("/tracks/" + trackObject.providerId, options, function(sound){
-      current.sound = sound;
-      current.sound.play();
+      /* Prevention in case this callback is late and a sound is already playing. */
+      if (current.sound == null) {
+        current.sound = sound;
+        current.sound.play();
+      }
     });
   };
 
