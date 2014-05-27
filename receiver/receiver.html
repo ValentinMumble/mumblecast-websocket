@@ -2,179 +2,66 @@
 <html>
   <head>
     <style type="text/css">
-    html, body {
-      background: #000;
-      color: #ddd;
-      font-family: 'Roboto Condensed', sans-serif;
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      font-size: 15pt;
-      overflow: hidden;
-    }
-
-    .hidden {
-      opacity: 0;
-    }
-
-    .disclaimer {
-      position: fixed;
-      top: 40%;
+    body {
       text-align: center;
-      width: 100%;
-      height: 100%;
-      font-size: 5em;
+      background: #111;
     }
 
-    .container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-    }
-
-    #soundcloudPlayer {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      width: 90%;
-      height: 80%;
-      transition: opacity 1s;
-    }
-
-    .top, .bottom {
-      display: flex;
-      flex-direction: row;
-    }
-
-    .left, .right {
-      display: flex;
-      flex-direction: column;
-      align-items:center;
-      justify-content:center;
+    #content {
+      position: fixed;
+      width: 80%;
+      height: 60%;
+      left: 50%;
+      top: 50%;
     }
 
     .left {
-      flex: 1;
+      float: left;
+      position: relative;
+      top: 50%;
+      margin-top: -150px;
+      width: 300px;
+      height: 300px;
+      background: url("images/loading.gif") no-repeat center center;
     }
 
     .right {
-      flex: 3;
+      float: left;
     }
 
-    .cover {
+    #currentTrack {
       position: relative;
-      background: url("images/loading.gif") no-repeat center;
+      width: 100%;
+      height: 100%;
+      left: -50%;
+      top: -50%;
+      background: #ccc;
     }
-    
+
     .artwork {
-      width: 100%;
-      transition: opacity 1s;
-    }
-
-    .overlay {
-      background: rgba(0, 0, 0, 0.8) no-repeat center;
-      background-size: 70%;
-      background-image: url("images/play.svg");
-      position: absolute;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-
-    .overlay.paused {
-      background-image: url("images/pause.svg");
-      opacity: 0.8;
-    }
-
-    .info {
-      font-size: 1.8em;
-      text-align: center;
-    }
-
-    .title, .artist {
-      text-transform: capitalize;
-    }
-
-    .waveformContainer {
-      margin-top: 30px;
-      width: 80%;
-    }
-
-    #waveform {
-      height: 120px;
-    }
-
-    .time {
-      margin-top: 10px;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      height: 30px;
-    }
-
-    .comment {
-      margin-top: 50px;
-      text-align: center;
-      width: 100%;
-      height: 30px;
-      font-size: 0.9em;
-      opacity: 0.4;
-    }
-
-    #youtubePlayer {
-      width: 100%;
-      height: 100%;
-    }
-
-    #youtubePlaceholder {
-      width: 100%;
-      height: 100%;
+      width: 300px;
+      height: 300px;
     }
     </style>
     <title>Mumblecast receiver</title>
-    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
     <script type="application/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script type="application/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
     <script type="application/javascript" src="//54.187.163.215:3000/socket.io/socket.io.js"></script>
     <script type="application/javascript" src="//connect.soundcloud.com/sdk.js"></script>
-    <script type="application/javascript" src="soundmanager2.js"></script>
-    <script type="application/javascript" src="waveform.js"></script>
-    <script type="application/javascript" src="http://www.youtube.com/player_api"></script>
     <script type="application/javascript" src="receiver.js"></script>
-  </head>
-  <body>
 
-    <div class="disclaimer">mumblecast.ga</div>
-    <div class="container">
-      <div id="soundcloudPlayer" class="player hidden">
-        <div class="top">
-          <div class="left">
-            <div class="cover">
-              <img class="artwork" />
-              <div class="overlay"></div>
-            </div>
-          </div>
-          <div class="right">
-            <div class="info">
-              <span class="title"></span> &mdash; <span class="artist"></span>
-            </div>
-            <div class="waveformContainer">
-              <div id="waveform"></div>
-              <div class="time">
-                <span class="elapsed"></span><span class="remaining"></span>
-              </div>
-            </div>
+    <div id="content">
+      <div id="currentTrack" style="display:none">
+        <div class="left">
+          <img class="artwork" />
+        </div>
+        <div class="right">
+          <div class="info">
+            <span class="title"></span> &mdash; <span class="user"></span>
           </div>
         </div>
-        <div class="bottom">
-          <div class="comment"></div>
-        </div>
-      </div>
-      <div id="youtubePlayer" class="player hidden">
-        <div id="youtubePlaceholder"></div>
       </div>
     </div>
 
