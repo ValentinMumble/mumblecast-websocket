@@ -13,7 +13,7 @@ TrackCollection.prototype = {
 		$.each(this.tracks, function(i, track){
 			setTimeout(function(){
 			displayTrack(track, $tracks);
-    },( i * 250 ));
+    },( i * 100 ));
 		});
 	},
 
@@ -27,12 +27,11 @@ TrackCollection.prototype = {
 				idSC : track.id,
 				title : track.title,
 				artworkUrl : track.artwork_url,
-				username : track.user.username
+				artist : track.user.username
 			};
-			
 			curr.addTrack(trackObject);
 		});
-
+		console.log(curr);
 		curr.displaySearchList();
 
 	},

@@ -10,61 +10,12 @@ var DEFAULT_ARTWORK_URLS = [
   "images/default_artwork_red.png",
   "images/default_artwork_yellow.png"
 ];
-      /*
-        $(".topnavbar").css({ 
-          transform: 'translate3d(0px, '+navBarPosition+'px, 0)'
-        });*/
 var SPEED = 100;
-var currentPlaylist = new TrackCollection();
+var CURR_PLAYLIST = new TrackCollection();
+
 $(document).ready(function() {
 
-  var navBarPosition = 0;
-  var dir = "down";
-  var currPos = $("#inner-wrap").scrollTop();
-  var position = $("#inner-wrap").scrollTop(); // should start at 0
-  $("#inner-wrap").scroll(function(e){
-    var scroll = $("#inner-wrap").scrollTop();
-    if(scroll >= position) {
-      //down
-      if(dir == "up"){
-        currPos = $("#inner-wrap").scrollTop()+50;
-        dir = "down";
-      }
-      navBarPosition = currPos-position;
-      console.log(navBarPosition);
-      console.log(dir);
-
-    } else {
-
-      if(dir == "down"){
-        currPos = $("#inner-wrap").scrollTop()+50;
-        dir = "up";
-      }
-      console.log(dir);
-      navBarPosition = currPos-position;
-      console.log(navBarPosition);
-
-    }
-      if(navBarPosition >= 0){
-        navBarPosition = 0;
-      }
-      else if(navBarPosition <= -50){
-        navBarPosition = -50;
-      }
-
-      if(scroll <= 50){
-        navBarPosition = 0;
-      }
-
-        $(".topnavbar").css({ 
-          transform: 'translate3d(0px, '+navBarPosition+'px, 0)'
-        });
-        $("#control-bar").css({
-          transform: 'translate3d(0px, '+(-navBarPosition)+'px, 0)'
-        });
-
-    position = scroll;
-  });
+  hideNavBarOnScroll();
 
   /* Connection to the node/websockets server. */
   var socket = io.connect("http://" + SOCKET_HOST + ":" + SOCKET_PORT);
@@ -80,10 +31,10 @@ $(document).ready(function() {
         trackObject.artworkUrl = getRandomDefaultArtworkUrl();
       }
       
-      currentPlaylist.addTrack(trackObject);
+      CURR_PLAYLIST.addTrack(trackObject);
 
     }
-      currentPlaylist.displayPlaylist();
+      CURR_PLAYLIST.displayPlaylist();
   });
 
   /* New track received from the socket, append it to our list of current tracks. */
@@ -180,15 +131,16 @@ var validate = function(track) {
   return true;
 };
 
-  $("#search-input").unbind("change keyup").bind("change keyup",function(){
+  $("#search-input").bind("keyup",function(){
 
-    $('#search-tracklist').empty();
     var $searchInput = $(this);
 
     var searchResults = new TrackCollection();
 
     SC.get('/tracks', { q: $searchInput.val() }, function(tracks) {
+      $('#search-tracklist').empty();
       searchResults.scToMumble(tracks);
+      console.log(tracks);
     });
   });
 
@@ -213,34 +165,6 @@ $('#search-tracklist').unbind('click').on('click', '.track', function(){
     }
   });
 
-});
-
-$("#submitTrackForm").unbind('submit').on('submit',function(){
-
-  var dataForm = $(this).serializeArray();
-  var searchTerm = dataForm['0'].value;
-  SC.get("/tracks/" + searchTerm, function(t, error){
-    if (error) {
-      displayAlert(error.message);
-    } else {
-
-      var track = {
-        provider :"soundcloud",
-        providerId : searchTerm,
-        title : t.title,
-        artist : t.user.username,
-        artworkUrl : t.artwork_url,
-        waveformUrl : t.waveform_url,
-        duration : t.duration
-      };
-
-      console.log(track);
-      socket.emit("new track", track);
-
-    }
-  });
-
-  return false;
 });
 
   /* -------- Main -------- */
@@ -272,8 +196,34 @@ var clearAlert = function(time) {
 };
 
 var deleteTrack = function(objectId) {
-  $("#" + objectId).slideUp(SPEED, function() { $(this).remove(); });
-  console.log(currentPlaylist);
-  currentPlaylist.removeTrack(objectId);
-  console.log(currentPlaylist);
+  $("#" + objectId).closest('.track-wrapper').slideUp(SPEED, function() { $(this).remove(); });
+  CURR_PLAYLIST.removeTrack(objectId);
+};
+
+var hideNavBarOnScroll = function(){
+  /* scroll direction boolean */
+  var up = false;
+
+  /*container scroll position*/
+  var position = $("#inner-wrap").scrollTop(); // should start at 0
+
+  $("#inner-wrap").scroll(function(){
+
+    var scroll = $("#inner-wrap").scrollTop();
+
+    if(position > 50){
+
+      if(scroll >= position && !up) {
+          $(".topnavbar").addClass('scroll-hide');
+          $("#control-bar").addClass('scroll-hide');
+          up = !up;
+      } else if(scroll < position && up){
+          $(".topnavbar").removeClass('scroll-hide');
+          $("#control-bar").removeClass('scroll-hide');
+          up = !up;
+      }
+
+    }
+    position = scroll;
+  });
 };

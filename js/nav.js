@@ -43,10 +43,10 @@ $('#tracks').on('click', '.test-button', function(){
 });
 
 $(".show-menu").on('click', function(){
+
   //$('.content').toggleClass('displaymenu');
   $('#inner-wrap').toggleClass('displaymenu');
   //$('.track').removeClass('show-track-menu');
-  $('.topnavbar').toggleClass('displaymenu');
  $('.show-menu img').toggleClass('hidden');
   $('.menu-wrap').toggleClass('displaymenu');
 })
