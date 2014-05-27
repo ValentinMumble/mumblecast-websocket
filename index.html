@@ -1,39 +1,72 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 
   <head>
     <title>Mumblecast</title>
+    <meta name="viewport" content="target-densitydpi=device-dpi, initial-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,400italic' rel='stylesheet' type='text/css'>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="normalize.css" />
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script type="application/javascript" src="http://54.187.163.215:3000/socket.io/socket.io.js"></script>
-    <script type="application/javascript" src="//connect.soundcloud.com/sdk.js"></script>
-    <script type="application/javascript" src="js/app.js"></script>
   </head>
 
   <body>
 
-    <div class="content">
+        <div class="topnavbar">
 
-      <div id="tracks"></div>
+          <button class="show-menu">
+            <img id="menu-chevron" class="hidden" src="images/chevron-right.png"/>
+            <img id="menu-icon" src="images/menu-icon.png"/>
+          </button>
+          
+          <div class="topnavbar-text">Mumblecast</div>
+
+          <button class="show-search">
+          <img id="menu-search" class="hidden" src="images/icon-search.png"/>
+          <img id="menu-icon" src="images/menu-icon.png"/>
+          </button>
+        </div>
+
+        <div class="menu-wrap">
+          <input id="search-input" />
+          <div id="search-tracklist"></div>
+          <ul>
+            <li>Accueil</li>
+            <li>Lorem</li>
+            <li>Ipsum</li>
+            <li>Foo</li>
+            <li>Bar</li>
+            <li>Accueil</li>
+            <li>Lorem</li>
+            <li>Ipsum</li>
+            <li>Foo</li>
+            <li>Bar</li>
+          </ul>
+        </div>
+        
+      <div id="inner-wrap">
+        <div id="tracks"></div>
+
+        <form id="submitTrackForm">
+          <input id="trackName" name="trackName"/>
+          <input type="submit" value="OK" />
+        </form>
+      </div>
       
-      <div>
-        <input type="text" id="trackInput" maxlength="8" /><br />
-        <button id="newTrack">Add</button>
-      </div>
-
-      <div>
-        <h3 id="usersConnected"></h3>
-      </div>
-
-      <div id="loading" style="display:none">
-        <img src="images/loading.gif" />
-      </div>
-
+    <div id="control-bar">
+      <div class="control-button previous"><i class="fa fa-step-backward"></i></div>
+      <div class="control-button play"><i class="fa fa-play"></i></div>
+      <div class="control-button next"><i class="fa fa-step-forward"></i></div>
     </div>
 
-    <div id="alert" style="display:none">
-      <div id="alertContent"></div>
-    </div>
+    <script type="application/javascript" src="js/jquery.min.js"></script>
+    <script type="application/javascript" src="http:///54.187.163.215:3000/socket.io/socket.io.js"></script>
+    <script type="application/javascript" src="//connect.soundcloud.com/sdk.js"></script>
+    <script type="application/javascript" src="js/nav.js"></script>
+    <script type="application/javascript" src="js/track.js"></script>
+    <script type="application/javascript" src="js/playlist.js"></script>
+    <script type="application/javascript" src="js/app.js"></script>
+
   </body>
-
 </html>
