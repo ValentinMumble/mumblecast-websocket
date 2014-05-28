@@ -110,6 +110,7 @@ var clearPlayers = function() {
   }
   /* Stop YouTube playing & loading if loaded. */
   if (youtubePlayer != null) youtubePlayer.stopVideo();
+  $(".player").addClass("hidden");
 };
 
 var playTrack = function(trackObject) {
@@ -126,14 +127,13 @@ var playTrack = function(trackObject) {
 
 var playSoundCloudTrack = function(trackObject) {
   $(".player").not("#soundcloudPlayer").hide();
-  $(".cover .overlay").removeClass("paused");
+  var $soundcloudPlayer = $("#soundcloudPlayer").show();
   var $waveform = $("#waveform").addClass("hidden").empty();
-  var $soundcloudPlayer = $("#soundcloudPlayer").addClass("hidden").show();
   var $elapsed = $soundcloudPlayer.find(".elapsed").text("");
   var $remaining = $soundcloudPlayer.find(".remaining").text("");
   var $comments = $soundcloudPlayer.find(".comments").empty();
-  var artworkUrl = trackObject.artworkUrl == null ? getRandomDefaultArtworkUrl() : trackObject.artworkUrl.replace("large", "t300x300");
   var $artwork = $soundcloudPlayer.find(".artwork");
+  var artworkUrl = trackObject.artworkUrl == null ? getRandomDefaultArtworkUrl() : trackObject.artworkUrl.replace("large", "t300x300");
   if ($artwork.attr("src") != artworkUrl) {
     $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { $artwork.removeClass("hidden"); });
   }
@@ -181,7 +181,7 @@ var playSoundCloudTrack = function(trackObject) {
 
 var playYouTubeTrack = function(trackObject) {
   $(".player").not("#youtubePlayer").hide();
-  $("#youtubePlayer").addClass("hidden").show();
+  $("#youtubePlayer").show();
   youtubePlayer.loadVideoById(trackObject.providerId);
   $("#youtubePlayer").removeClass("hidden");
 };
@@ -215,7 +215,6 @@ var playPrevious = function() {
 
 var stop = function() {
   clearPlayers();
-  $(".player").addClass("hidden");
   $(".disclaimer").fadeIn();
 };
 
