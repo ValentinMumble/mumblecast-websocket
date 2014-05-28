@@ -109,8 +109,8 @@ $(document).ready(function() {
       current.sound.destruct();
       current.sound = null;
     }
-    /* Stop YouTube playing & loading. */
-    youtubePlayer.stopVideo();
+    /* Stop YouTube playing & loading if loaded. */
+    if (youtubePlayer != null) youtubePlayer.stopVideo();
   };
 
   var playTrack = function(trackObject) {
@@ -148,7 +148,6 @@ $(document).ready(function() {
 
     var waveform = new Waveform({
       container: $waveform[0],
-      innerColor: defaultColor
     });
 
     waveform.dataFromSoundCloudTrack({waveform_url: trackObject.waveformUrl});
