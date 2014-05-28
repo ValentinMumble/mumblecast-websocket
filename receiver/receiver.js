@@ -190,7 +190,7 @@ $(document).ready(function() {
     if (current.trackObject != null) {
       if (current.trackObject.provider == "soundcloud") {
         if (current.sound != null) {
-          paused ? current.sound.pause() : current.sound.play();
+          paused ? current.sound.pause() : current.sound.resume();
           $(".cover .overlay").toggleClass("paused", paused);
         }
       } else if (current.trackObject.provider == "youtube") {
