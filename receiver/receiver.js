@@ -189,8 +189,10 @@ $(document).ready(function() {
   var pauseTrack = function(paused) {
     if (current.trackObject != null) {
       if (current.trackObject.provider == "soundcloud") {
-        paused ? current.sound.pause() : current.sound.play();
-        $(".cover .overlay").toggleClass("paused", paused);
+        if (current.sound != null) {
+          paused ? current.sound.pause() : current.sound.play();
+          $(".cover .overlay").toggleClass("paused", paused);
+        }
       } else if (current.trackObject.provider == "youtube") {
         paused ? youtubePlayer.pauseVideo() : youtubePlayer.playVideo();
       }
