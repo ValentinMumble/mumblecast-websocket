@@ -131,7 +131,7 @@ $(document).ready(function() {
     var $soundcloudPlayer = $("#soundcloudPlayer").addClass("hidden").show();
     var $elapsed = $soundcloudPlayer.find(".elapsed").text("");
     var $remaining = $soundcloudPlayer.find(".remaining").text("");
-    var $comment = $soundcloudPlayer.find(".comment").text("");
+    var $comments = $soundcloudPlayer.find(".comments").empty();
     var artworkUrl = trackObject.artworkUrl == null ? getRandomDefaultArtworkUrl() : trackObject.artworkUrl.replace("large", "t300x300");
     var $artwork = $soundcloudPlayer.find(".artwork");
     if ($artwork.attr("src") != artworkUrl) {
@@ -167,7 +167,8 @@ $(document).ready(function() {
       $remaining.text("-" + millisecondsToHms(this.duration - this.position + 1));
     };
     options.ontimedcomments = function(comments) {
-      $comment.text(comments[0].user.username + ": " + comments[0].body);
+      $('<p class="comment" />').text(comments[0].user.username + ": " + comments[0].body).hide().prependTo($comments).slideDown();
+      $comments.find(".comment:gt(4)").fadeOut(function() { $(this).remove(); });
     };
 
     SC.stream("/tracks/" + trackObject.providerId, options, function(sound){
