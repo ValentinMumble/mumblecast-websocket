@@ -215,9 +215,8 @@ var playPrevious = function() {
 
 var stop = function() {
   clearPlayers();
-  $(".player").addClass("hidden").fadeOut(function() {
-    $(".disclaimer").fadeIn();
-  });
+  $(".player").addClass("hidden");
+  $(".disclaimer").fadeIn();
 };
 
 var onYouTubeIframeAPIReady = function() {
