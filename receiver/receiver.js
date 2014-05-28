@@ -70,7 +70,7 @@ $(document).ready(function() {
   /* ------ } Cast ------ */
 
   var tracks = [];
-  var current = {index: -1, trackObject: null, sound: null, paused: true};
+  var current = {index: -1, trackObject: null, sound: null};
   var youtubePlayer = null;
 
   var getRandomDefaultArtworkUrl = function() {
@@ -123,8 +123,6 @@ $(document).ready(function() {
       playYouTubeTrack(trackObject);
     }
     socket.emit("track playing", trackObject.id);
-    current.paused = false;
-    socket.emit("paused", current.paused);
   };
 
   var playSoundCloudTrack = function(trackObject) {
@@ -188,16 +186,14 @@ $(document).ready(function() {
     $("#youtubePlayer").removeClass("hidden");
   };
 
-  var pauseTrack = function() {
+  var pauseTrack = function(paused) {
     if (current.trackObject != null) {
       if (current.trackObject.provider == "soundcloud") {
-        current.sound.togglePause();
-        $(".cover .overlay").toggleClass("paused");
+        paused ? current.sound.pause() : current.sound.play();
+        $(".cover .overlay").toggleClass("paused", paused);
       } else if (current.trackObject.provider == "youtube") {
-        current.paused ? youtubePlayer.playVideo() : youtubePlayer.pauseVideo();
+        paused ? youtubePlayer.pauseVideo() : youtubePlayer.playVideo();
       }
-      current.paused = !current.paused;
-      socket.emit("paused", current.paused);
     }
   };
 
@@ -257,8 +253,8 @@ $(document).ready(function() {
     playTrack(tracks[current.index]);
   });
 
-  /* When the server tells to pause the current track. */
-  socket.on("pause", pauseTrack);
+  /* When the server tells whether the current track is paused. */
+  socket.on("paused", pauseTrack);
 
   /* When the server tells to play the next track. */
   socket.on("next", playNext);
