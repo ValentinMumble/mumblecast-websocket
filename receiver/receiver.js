@@ -128,6 +128,7 @@ $(document).ready(function() {
   var playSoundCloudTrack = function(trackObject) {
     $(".player").not("#soundcloudPlayer").hide();
     $(".cover .overlay").removeClass("paused");
+    var $waveform = $("#waveform").addClass("hidden").empty();
     var $soundcloudPlayer = $("#soundcloudPlayer").addClass("hidden").show();
     var $elapsed = $soundcloudPlayer.find(".elapsed").text("");
     var $remaining = $soundcloudPlayer.find(".remaining").text("");
@@ -145,9 +146,8 @@ $(document).ready(function() {
     var loadedColor = "#2A2A2A";
     var playedColor = "#ff6600";
 
-    $("#waveform").empty();
     var waveform = new Waveform({
-      container: $("#waveform")[0],
+      container: $waveform[0],
       innerColor: defaultColor
     });
 
@@ -167,7 +167,7 @@ $(document).ready(function() {
       $remaining.text("-" + millisecondsToHms(this.duration - this.position + 1));
     };
     options.ontimedcomments = function(comments) {
-      $('<p class="comment" />').text(comments[0].user.username + ": " + comments[0].body).hide().prependTo($comments).slideDown();
+      $('<p class="comment" />').text(comments[0].user.username + ": " + comments[0].body).prependTo($comments).animate({height: "show", opacity: 1});
       $comments.find(".comment:gt(4)").fadeOut(function() { $(this).remove(); });
     };
 
@@ -176,6 +176,7 @@ $(document).ready(function() {
       if (current.sound == null) {
         current.sound = sound;
         current.sound.play();
+        $waveform.removeClass("hidden");
       }
     });
   };
