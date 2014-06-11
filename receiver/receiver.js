@@ -127,26 +127,32 @@ var playTrack = function(trackObject) {
 
 var playSoundCloudTrack = function(trackObject) {
   $(".player").not("#soundcloudPlayer").hide();
+  $("#waveformContainer").find(".spinner").removeClass("hidden");
   var $soundcloudPlayer = $("#soundcloudPlayer").show();
-  var $waveform = $("#waveform").addClass("hidden").empty();
+  var $waveform = $("#waveform").addClass("hidden");
   var $elapsed = $soundcloudPlayer.find(".elapsed").text("");
   var $remaining = $soundcloudPlayer.find(".remaining").text("");
   var $comments = $soundcloudPlayer.find(".comments").empty();
   var $artwork = $soundcloudPlayer.find(".artwork");
   var artworkUrl = trackObject.artworkUrl == null ? getRandomDefaultArtworkUrl() : trackObject.artworkUrl.replace("large", "t300x300");
   if ($artwork.attr("src") != artworkUrl) {
-    $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { $artwork.removeClass("hidden"); });
+    $("#bgcover").addClass("hidden");
+    $artwork.addClass("hidden").attr("src", artworkUrl).load(function() { 
+      $artwork.removeClass("hidden");
+      $("#bgcover").css("background-image", "url(" + artworkUrl + ")").removeClass("hidden");
+    });
   }
   $soundcloudPlayer.find(".title").text(trackObject.title);
   $soundcloudPlayer.find(".artist").text(trackObject.artist);
   $soundcloudPlayer.removeClass("hidden");
 
-  var defaultColor = "#222";
-  var loadedColor = "#2A2A2A";
+  var defaultColor = "#000";
+  var loadedColor = "#111";
   var playedColor = "#ff6600";
 
   var waveform = new Waveform({
-    container: $waveform[0],
+    canvas: $waveform[0],
+    innerColor: "transparent"
   });
 
   waveform.dataFromSoundCloudTrack({waveform_url: trackObject.waveformUrl});
@@ -168,14 +174,18 @@ var playSoundCloudTrack = function(trackObject) {
     $('<p class="comment" />').text(comments[0].user.username + ": " + comments[0].body).prependTo($comments).animate({height: "show", opacity: 1});
     $comments.find(".comment:gt(4)").fadeOut(function() { $(this).remove(); });
   };
+  options.onplay = function() {
+    $waveform.removeClass("hidden");
+    $("#waveformContainer").find(".spinner").addClass("hidden");
+  };
 
   SC.stream("/tracks/" + trackObject.providerId, options, function(sound){
     /* Prevention in case this callback is late and a sound is already playing. */
     if (current.sound == null) {
       current.sound = sound;
       current.sound.play();
-      $waveform.removeClass("hidden");
     }
+    console.log(options);
   });
 };
 
@@ -247,6 +257,8 @@ $(document).ready(function() {
     useHTML5Audio: true,
     preferFlash: false,
   });
+
+  $("#waveformContainer").spin();
 
   /* ------ Socket { ------ */
 

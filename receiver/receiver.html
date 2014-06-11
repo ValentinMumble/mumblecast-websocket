@@ -3,7 +3,6 @@
   <head>
     <style type="text/css">
     html, body {
-      background: #000;
       color: #ddd;
       font-family: 'Roboto Condensed', sans-serif;
       margin: 0;
@@ -13,8 +12,12 @@
       overflow: hidden;
     }
 
+    html {
+      background: #000;
+    }
+
     .hidden {
-      opacity: 0;
+      opacity: 0 !important;
     }
 
     .disclaimer {
@@ -39,6 +42,22 @@
       justify-content: center;
       width: 90%;
       height: 80%;
+      transition: opacity 1s;
+    }
+
+    #bgcover {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      -webkit-filter: blur(90px);
+      filter: blur(90px);
+      opacity: 0.5;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
       transition: opacity 1s;
     }
 
@@ -99,15 +118,23 @@
       text-transform: capitalize;
     }
 
-    .waveformContainer {
+    #waveformContainer {
       width: 80%;
-      background: url("images/loading.gif") no-repeat center;
+      position: relative;
+    }
+
+    .spinner {
+      width: 100%;
+      height: 100%;
+      transition: opacity 0.5s;
     }
 
     #waveform {
       margin-top: 30px;
+      width: 100%;
       height: 120px;
-      transition: opacity 1s;
+      opacity: 0.5;
+      transition: opacity 0.5s;
     }
 
     .time {
@@ -152,6 +179,8 @@
     <script type="application/javascript" src="//connect.soundcloud.com/sdk.js"></script>
     <script type="application/javascript" src="soundmanager2.js"></script>
     <script type="application/javascript" src="waveform.js"></script>
+    <script type="application/javascript" src="spin.min.js"></script>
+    <script type="application/javascript" src="jquery.spin.js"></script>
     <script type="application/javascript" src="http://www.youtube.com/player_api"></script>
     <script type="application/javascript" src="receiver.js"></script>
   </head>
@@ -160,6 +189,7 @@
     <div class="disclaimer">mumblecast.ga</div>
     <div class="container">
       <div id="soundcloudPlayer" class="player hidden">
+        <div id="bgcover"></div>
         <div class="top">
           <div class="left">
             <div class="cover">
@@ -171,8 +201,8 @@
             <div class="info">
               <span class="title"></span> &mdash; <span class="artist"></span>
             </div>
-            <div class="waveformContainer">
-              <div id="waveform"></div>
+            <div id="waveformContainer">
+              <canvas id="waveform" class="hidden"></canvas>
               <div class="time">
                 <span class="elapsed"></span><span class="remaining"></span>
               </div>
